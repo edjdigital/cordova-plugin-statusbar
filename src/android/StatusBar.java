@@ -28,6 +28,10 @@ import android.view.WindowManager;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import androidx.core.graphics.Insets;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaArgs;
@@ -167,26 +171,32 @@ public class StatusBar extends CordovaPlugin {
         }
     }
 
-    private void setStatusBarBackgroundColor(final String colorPref) {
+    private void setStatusBarBackgroundColor(String colorPref) {
         if (colorPref.isEmpty()) return;
 
         int color;
         try {
             color = Color.parseColor(colorPref);
         } catch (IllegalArgumentException ignore) {
-            LOG.e(TAG, "Invalid hexString argument, use f.i. '#999999'");
-            return;
+            LOG.e(TAG, "Invalid hex..."); return;
         }
-
+    
         Window window = activity.getWindow();
-
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS); // SDK 19-30
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS); // SDK 21
-
+    
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+            WindowCompat.setDecorFitsSystemWindows(window, false);
             View decorView = window.getDecorView();
-            decorView.setBackgroundColor(color);
+            ViewCompat.setOnApplyWindowInsetsListener(decorView, (v, insets) -> {
+                Insets sb = insets.getInsets(WindowInsetsCompat.Type.statusBars());
+                v.setPadding(0, sb.top, 0, 0);
+                v.setBackgroundColor(color);
+                return insets;
+            });
+            decorView.requestApplyInsets();
+    
         } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS);
+            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
             window.setStatusBarColor(color);
         }
     }
