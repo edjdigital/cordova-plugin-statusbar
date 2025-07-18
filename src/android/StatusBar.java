@@ -178,10 +178,11 @@ public class StatusBar extends CordovaPlugin {
             return;
         }
 
+        Window window = activity.getWindow();
+
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS); // SDK 19-30
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS); // SDK 21
 
-        Window window = activity.getWindow();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
             View decorView = window.getDecorView();
             decorView.setBackgroundColor(color);
